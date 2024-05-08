@@ -208,33 +208,32 @@ window.addEventListener("resize", () => {
     .attr("width", xScale.bandwidth())
     .attr("height", rowHeight / 2);
 
-  svg
-    .select(".line") // Select the line by class name
-    .attr("d", lineGenerator); // Redraw the line with the updated scales
-});
-// rects
-//   .attr("x", (d) => xScale(d.year))
-//   .attr("y", margin.top)
-//   .attr("width", xScale.bandwidth())
-//   .attr("height", height - margin.top - margin.bottom);
+  // line
+  //   .select(".line") // Select the line by class name
+  //   .attr("d", lineGenerator); // Redraw the line with the updated scales
 
-// legend
-legendrects
-  .attr("x", (d, i) => xLegendScale(i))
-  .attr("y", height - margin.bottom + 50)
-  .attr("width", xLegendScale.bandwidth())
-  .attr("height", 20);
+  // rects
+  //   .attr("x", (d) => xScale(d.year))
+  //   .attr("y", margin.top)
+  //   .attr("width", xScale.bandwidth())
+  //   .attr("height", height - margin.top - margin.bottom);
 
-legendlabels
-  .attr("x", (d, i) => xLegendScale(i) + xLegendScale.bandwidth() / 2)
-  .attr("y", height - margin.bottom + 50 + 15);
+  // legend
+  legendrects
+    .attr("x", (d, i) => xLegendScale(i))
+    .attr("y", height - margin.bottom + 50)
+    .attr("width", xLegendScale.bandwidth())
+    .attr("height", 20);
 
-xAxis.scale(xScale); // Update the scale used by x-axis
-d3.select(".x-axis") // Select the existing x-axis in the SVG
-  .call(xAxis) // Re-apply the axis to adjust tick positions and labels
-  .attr("transform", `translate(0,${height - margin.bottom})`);
+  legendlabels
+    .attr("x", (d, i) => xLegendScale(i) + xLegendScale.bandwidth() / 2)
+    .attr("y", height - margin.bottom + 50 + 15);
 
-window.addEventListener("resize", () => {
+  xAxis.scale(xScale); // Update the scale used by x-axis
+  d3.select(".x-axis") // Select the existing x-axis in the SVG
+    .call(xAxis) // Re-apply the axis to adjust tick positions and labels
+    .attr("transform", `translate(0,${height - margin.bottom})`);
+
   // Previous resize updates
   // Update yScale range in case height has changed
   // Update scale domains
