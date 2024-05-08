@@ -1,4 +1,6 @@
 :root {
+  background-color: black;
+
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -14,7 +16,7 @@
   max-width: 1020px;
   margin-left: auto;
   margin-right: auto;
-
+  text-align: center;
   margin-top: 130px;
   line-height: 1.1;
 }
@@ -22,7 +24,8 @@
 h1 {
   font-size: 40px;
   font-weight: 500;
-  text-align: left;
+  color: white;
+
   margin-bottom: 13px;
   padding: 0px 10px;
   letter-spacing: -0.5px;
