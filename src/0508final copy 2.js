@@ -18,7 +18,7 @@ const xScale = d3
 
 const yScale = d3
   .scaleLinear()
-  .range([height - margin.bottom - 150, margin.top + 80]); // Map these to the height range
+  .range([height - margin.bottom - 150, margin.top + 80]);
 
 const colorScale = d3
   .scaleSequential()
@@ -30,10 +30,10 @@ const xLegendScale = d3
   .range([width / 2 - 300, width / 2 + 300])
   .paddingInner(0.05);
 
-const lineGenerator = d3
-  .line()
-  .x((d) => xScale(d.year) + xScale.bandwidth() / 2) // Center the line in each band
-  .y((d) => yScale(d.avg)); // Assume yScale is already defined to scale temperature values
+// const lineGenerator = d3
+//   .line()
+//   .x((d) => xScale(d.year) + xScale.bandwidth() / 2)
+//   .y((d) => yScale(d.avg));
 
 // SVG elements
 let rects;
@@ -57,11 +57,11 @@ d3.csv("data/temperature-anomaly-data.csv").then((raw_data) => {
     .map((d) => ({
       year: parseInt(d.Year),
       min: +d[
-        "Upper bound of the annual temperature anomaly (95% confidence interval)"
+        "Lower bound of the annual temperature anomaly (95% confidence interval)"
       ],
       avg: +d["Global average temperature anomaly relative to 1961-1990"],
       max: +d[
-        "Lower bound of the annual temperature anomaly (95% confidence interval)"
+        "Upper bound of the annual temperature anomaly (95% confidence interval)"
       ],
     }));
 
@@ -87,26 +87,11 @@ d3.csv("data/temperature-anomaly-data.csv").then((raw_data) => {
   // Adjust the height for multiple rows
   const rowHeight = (height - margin.top - margin.bottom - 10) / 2;
 
-  //  -update
+  //  update
   xScale.range([margin.left, width - margin.right]);
   xLegendScale.domain(legendData.map((d, i) => i));
 
-  //   // Render heatmaps for min, avg, max
-  //   ["min", "avg", "max"].forEach((key, index) => {
-  //     svg
-  //       .selectAll(".rect-" + key)
-  //       .data(data)
-  //       .enter()
-  //       .append("rect")
-  //       .attr("x", (d) => xScale(d.year))
-  //       .attr("y", margin.top + index * rowHeight)
-  //       .attr("width", xScale.bandwidth())
-  //       .attr("height", rowHeight - 1)
-  //       .attr("fill", (d) => colorScale(d[key]));
-  //   });
-
-  // Render heatmaps for min, avg, max
-
+  //  heatmaps
   max = svg
     .selectAll("rects")
     .data(data)
@@ -116,7 +101,7 @@ d3.csv("data/temperature-anomaly-data.csv").then((raw_data) => {
     .attr("y", margin.top)
     .attr("width", xScale.bandwidth())
     .attr("height", rowHeight / 2)
-    .attr("fill", (d) => colorScale(d.min));
+    .attr("fill", (d) => colorScale(d.max));
 
   avg = svg
     .selectAll("rects")
@@ -138,18 +123,9 @@ d3.csv("data/temperature-anomaly-data.csv").then((raw_data) => {
     .attr("y", margin.top + rowHeight + rowHeight / 2 + 10)
     .attr("width", xScale.bandwidth())
     .attr("height", rowHeight / 2)
-    .attr("fill", (d) => colorScale(d.max));
+    .attr("fill", (d) => colorScale(d.min));
 
-  svg
-    .append("path")
-    .datum(data) // Bind the data array to the path element
-    .attr("class", "line") // Optional: for styling via CSS
-    .attr("d", lineGenerator) // Apply the line generator to create the "d" attribute
-    .attr("fill", "none")
-    .attr("stroke", "none") // Set the color of the line
-    .attr("stroke-width", 1); // Set the thickness of the line
-  // Legend - optional update if needed for clarity
-
+  // legends
   legendrects = svg
     .selectAll("legend-labels")
     .data(legendData)
@@ -171,6 +147,37 @@ d3.csv("data/temperature-anomaly-data.csv").then((raw_data) => {
     .text((d) => d3.format("0.1f")(d))
     .attr("class", "legend-labels")
     .style("fill", (d) => (d >= 0.5 ? "#fff" : "#111"));
+
+  // tooltip and color changing
+  const tooltip = d3
+    .select("#svg-container")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0.5)
+    .style("position", "absolute")
+    .style("background", "black")
+    .style("color", "white")
+    .style("border", "0.5px solid #ccc")
+    .style("padding", "10px")
+    .style("border-radius", "10px")
+    .style("pointer-events", "none");
+  svg
+    .selectAll("rect")
+    .on("mouseover", function (event, d) {
+      d3.select(this).transition().duration(100).attr("fill", "salmon");
+      tooltip.transition().duration(200).style("opacity", 0.9);
+      tooltip
+        .html(`Year: ${d.year}<br/>Value: ${d.avg.toFixed(2)}`)
+        .style("left", event.pageX + "px")
+        .style("top", event.pageY - 28 + "px");
+    })
+    .on("mouseout", function (d) {
+      d3.select(this)
+        .transition()
+        .duration(100)
+        .attr("fill", (d) => colorScale(d.avg));
+      tooltip.transition().duration(500).style("opacity", 0);
+    });
 });
 
 ////////////////////////////////////////////////////////////////////
@@ -186,7 +193,7 @@ window.addEventListener("resize", () => {
 
   yScale.range([height - margin.bottom - 150, margin.top + 50]); // Map these to the height range
 
-  xLegendScale.range([width / 2 - 140, width / 2 + 140]);
+  xLegendScale.range([width / 2 - 300, width / 2 + 300]);
 
   // heatmap
 
@@ -209,8 +216,8 @@ window.addEventListener("resize", () => {
     .attr("height", rowHeight / 2);
 
   // line
-  //   .select(".line") // Select the line by class name
-  //   .attr("d", lineGenerator); // Redraw the line with the updated scales
+  //   .select(".line")
+  //   .attr("d", lineGenerator);
 
   // rects
   //   .attr("x", (d) => xScale(d.year))
@@ -223,7 +230,8 @@ window.addEventListener("resize", () => {
     .attr("x", (d, i) => xLegendScale(i))
     .attr("y", height - margin.bottom + 50)
     .attr("width", xLegendScale.bandwidth())
-    .attr("height", 20);
+    .attr("height", 20)
+    .attr("fill", (d) => colorScale(d));
 
   legendlabels
     .attr("x", (d, i) => xLegendScale(i) + xLegendScale.bandwidth() / 2)
@@ -233,33 +241,4 @@ window.addEventListener("resize", () => {
   d3.select(".x-axis") // Select the existing x-axis in the SVG
     .call(xAxis) // Re-apply the axis to adjust tick positions and labels
     .attr("transform", `translate(0,${height - margin.bottom})`);
-
-  // Previous resize updates
-  // Update yScale range in case height has changed
-  // Update scale domains
-  // // Render x-axis
-  // d3.select(".x-axis");
-  // xAxis.attr("transform", `translate(0,${height - margin.bottom})`).call(xAxis);
-  // xAxis = d3
-  //   .axisBottom(xScale)
-  //   .tickValues(xScale.domain().filter((d) => !(d % 10)));
-  // xAxis
-  //   .axisBottom(xScale)
-  //   .tickValues(xScale.domain().filter((d) => !(d % 10)))
-  //   .attr("transform", `translate(0,${height - margin.bottom})`)
-  //   .attr("class", "x-axis")
-  //   .attr("color", "white");
-  // //  unit
-  // unit
-  //   .attr("x", xLegendScale(legendData.length - 1) + 60)
-  //   .attr("y", height - margin.bottom + 50 + 15);
-  //  axis updated
-  // xAxis
-  //   .tickValues(xScale.domain().filter((d) => !(d % 10)))
-  //   .axisBottom(xScale)
-  //   .range([margin.left, width - margin.right])
-  //   .attr("transform", `translate(0,${height - margin.bottom})`);
-  // d3.select(".x-axis")
-  //   .attr("transform", `translate(0,${height - margin.bottom})`)
-  //   .call(xAxis);
 });
